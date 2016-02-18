@@ -20,16 +20,17 @@ Postch.requestCredential = function (options, credentialRequestCompleteCallback)
   }
   var credentialToken = Random.secret();
 
-  var scope = (options && options.requestPermissions) || ['user:email'];
+  var scope = (options && options.requestPermissions) || ['email', 'openid', 'profile'];
   var flatScope = _.map(scope, encodeURIComponent).join('+');
 
   var loginStyle = OAuth._loginStyle('postch', config, options);
 
   var loginUrl =
-    'https://postch.com/login/oauth/authorize' +
+    'https://wedec.post.ch/OAuth/authorization' +
     '?client_id=' + config.clientId +
     '&scope=' + flatScope +
     '&redirect_uri=' + OAuth._redirectUri('postch', config) +
+    '&nonce=test1234' + 
     '&state=' + OAuth._stateParam(loginStyle, credentialToken, options && options.redirectUrl);
 
   OAuth.launchLogin({

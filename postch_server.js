@@ -3,23 +3,22 @@ Postch = {};
 OAuth.registerService('postch', 2, null, function(query) {
 
   var accessToken = getAccessToken(query);
-  var identity = getIdentity(accessToken);
-  var emails = getEmails(accessToken);
-  var primaryEmail = _.findWhere(emails, {primary: true});
+  var userInfo = getUserInfo(accessToken);
+
 
   return {
     serviceData: {
-      id: identity.id,
+      id: userInfo.sub,
       accessToken: OAuth.sealSecret(accessToken),
-      email: identity.email || (primaryEmail && primaryEmail.email) || '',
-      username: identity.login,
-      emails: emails
+      email: userInfo.email || '',
+      username: userInfo.preferred_username,
+      emails: [userInfo.email]
     },
-    options: {profile: {name: identity.name}}
+    options: {profile: {name: userInfo.name}}
   };
 });
 
-// http://developer.postch.com/v3/#user-agent-required
+
 var userAgent = "Meteor";
 if (Meteor.release)
   userAgent += "/" + Meteor.release;
@@ -32,7 +31,7 @@ var getAccessToken = function (query) {
   var response;
   try {
     response = HTTP.post(
-      "https://postch.com/login/oauth/access_token", {
+      "https://wedec.post.ch/OAuth/token?", {
         headers: {
           Accept: 'application/json',
           "User-Agent": userAgent
@@ -56,11 +55,11 @@ var getAccessToken = function (query) {
   }
 };
 
-var getIdentity = function (accessToken) {
+var getUserInfo = function (accessToken) {
   try {
     return HTTP.get(
-      "https://api.postch.com/user", {
-        headers: {"User-Agent": userAgent}, // http://developer.postch.com/v3/#user-agent-required
+      "https://wedec.post.ch/api/userinfo", {
+        headers: {"User-Agent": userAgent}, // TODO: do we need to set it? github needs it
         params: {access_token: accessToken}
       }).data;
   } catch (err) {
@@ -69,17 +68,6 @@ var getIdentity = function (accessToken) {
   }
 };
 
-var getEmails = function (accessToken) {
-  try {
-    return HTTP.get(
-      "https://api.postch.com/user/emails", {
-        headers: {"User-Agent": userAgent}, // http://developer.postch.com/v3/#user-agent-required
-        params: {access_token: accessToken}
-      }).data;
-  } catch (err) {
-    return [];
-  }
-};
 
 Postch.retrieveCredential = function(credentialToken, credentialSecret) {
   return OAuth.retrieveCredential(credentialToken, credentialSecret);
