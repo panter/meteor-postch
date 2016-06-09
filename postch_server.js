@@ -31,7 +31,7 @@ var getAccessToken = function (query) {
   var response;
   try {
     response = HTTP.post(
-      "https://wedec.post.ch/OAuth/token?", {
+      "https://wedecint.post.ch/WEDECOAuth/token?", {
         headers: {
           Accept: 'application/json',
           "User-Agent": userAgent
